@@ -134,7 +134,7 @@ export default function Home() {
         width={720}
         videoConstraints={videoConstraints}
         mirrored={true}
-        className="rounded-lg mx-auto aspect-[300/450] md:w-full w-[300px] h-[450px]"
+        className="rounded-lg mx-auto aspect-[300/450] md:w-full w-[300px] h-[450px] object-cover"
       />
       <button onClick={capture}>Capture photo</button>
     </div>,
