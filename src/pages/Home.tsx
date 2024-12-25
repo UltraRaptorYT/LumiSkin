@@ -8,6 +8,16 @@ import { Input } from "@/components/ui/input";
 
 export default function Home() {
   const webcamRef = useRef<Webcam>(null);
+  const videoConstraints = {
+    width: 720,
+    height: 1280,
+    facingMode: "user",
+  };
+
+  const [dialogOpen, setDialogOpen] = useState<boolean>(false);
+  const [dialogState, setDialogState] = useState<number>(0);
+  const [file, setFile] = useState<File>();
+
   const capture = useCallback(() => {
     if (webcamRef.current) {
       const imageSrc = webcamRef.current.getScreenshot();
@@ -37,16 +47,6 @@ export default function Home() {
       }
     }
   }, [webcamRef]);
-
-  const videoConstraints = {
-    width: 720,
-    height: 1280,
-    facingMode: "user",
-  };
-
-  const [dialogOpen, setDialogOpen] = useState<boolean>(true);
-  const [dialogState, setDialogState] = useState<number>(2);
-  const [file, setFile] = useState<File>();
 
   useEffect(() => {
     if ([2].includes(dialogState)) {
