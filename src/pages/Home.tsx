@@ -20,18 +20,85 @@ export default function Home() {
     height: 1280,
     facingMode: "user",
   };
-
+  /**
+ *
+ * 1. A daily skin care routine
+2. Tips & Tricks to improve skin
+3. Recommend suitable products
+4. Search for videos on how to use the products
+5. Give me a
+ */
   const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+  const model = genAI.getGenerativeModel({
+    model: "gemini-1.5-flash",
+    generationConfig: {
+      responseMimeType: "application/json",
+    },
+    systemInstruction: `
+You are my professional AI skin care analyser. Analyse the face provided, provide the following.
+
+1. Rate my skin score out of 10 on the following.
+  1. Radiance
+  2. Uneven tone
+  3. Texture
+  4. Wrinkles
+  5. Firmness
+2. Provide me with an simple yet effective skin care routine to fix my skin issues. [Format in Markdown]
+3. Provide me with tips and tricks to fix my skin. [Format in Markdown]
+4. Recommend me skin care products with image that will fix my skin. [Give me links]
+5. Provide a tutorial on how to use the skin care product via YouTube links.
+
+Give the output in the following JSON schema and all fields are required.
+{
+  "rating": {
+    "radiance": {
+      "score": 10,
+      "explanation": ""
+    },
+    "unevenTone": {
+      "score": 10,
+      "explanation": ""
+    },
+    "texture": {
+      "score": 10,
+      "explanation": ""
+    },
+    "wrinkles": {
+      "score": 10,
+      "explanation": ""
+    },
+    "firmness": {
+      "score": 10,
+      "explanation": ""
+    }
+  },
+  "routine": "",
+  "tips": "",
+  "products": [
+    {
+      "name": "",
+      "price": "",
+      "image": "Must be link",
+      "url": "Must be link",
+      "explanation": "",
+      "tutorial": "Must be link"
+    }
+  ]
+}
+    `,
+  });
 
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
   const [dialogState, setDialogState] = useState<number>(0);
   const [file, setFile] = useState<ArrayBuffer>();
+  const [imageSrc, setImageSrc] = useState<string>();
+  const [genResult, setGenResult] = useState<string>();
 
   const capture = useCallback(() => {
     if (webcamRef.current) {
       const imageSrc = webcamRef.current.getScreenshot();
       if (imageSrc) {
+        setImageSrc(imageSrc);
         const arr = imageSrc.split(",");
         const mimeMatch = arr[0].match(/:(.*?);/);
         if (!mimeMatch || arr.length < 2) {
@@ -68,6 +135,13 @@ export default function Home() {
     const selectedFile = event.target.files?.[0];
     if (selectedFile) {
       let file = await selectedFile.arrayBuffer();
+      const blob = new Blob([file], { type: "image/png" });
+
+      // Step 2: Create a URL from the Blob
+      const url = URL.createObjectURL(blob);
+
+      // Step 3: Set the URL to state
+      setImageSrc(url);
       setFile(file);
       console.log(file);
     }
@@ -81,14 +155,17 @@ export default function Home() {
           mimeType: "image/jpeg",
         },
       },
-      "Caption this image.",
+      "Analyse the face.",
     ]);
     console.log(result.response.text());
+    setGenResult(result.response.text());
+    setDialogState(4);
     return result;
   }
 
   useEffect(() => {
     if (file) {
+      setDialogState(3);
       runAIAnalysis(file);
     }
   }, [file]);
@@ -170,6 +247,17 @@ export default function Home() {
           <FaCamera />
         </Button>
       </div>
+    </div>,
+    <div className="p-3 w-full h-full flex items-center relative">
+      <img src={imageSrc} className="animate-pulse rounded-lg" />
+      <p className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 p-2 rounded-full animate-pulse bg-black/50">
+        Analysing Face...
+      </p>
+    </div>,
+    <div className="w-full h-full flex flex-col overflow-scroll">
+      <h2 className="text-2xl">YOUR RESULTS</h2>
+      {genResult}
+      <div className="bg-white rounded-full">Texture</div>
     </div>,
   ];
   return (
