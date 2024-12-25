@@ -1,10 +1,17 @@
 import heroBG from "@/assets/herobg.webp";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import Webcam from "react-webcam";
 import { Input } from "@/components/ui/input";
+import { FaCamera } from "react-icons/fa6";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 export default function Home() {
   const webcamRef = useRef<Webcam>(null);
@@ -14,9 +21,12 @@ export default function Home() {
     facingMode: "user",
   };
 
+  const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
+  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
   const [dialogState, setDialogState] = useState<number>(0);
-  const [file, setFile] = useState<File>();
+  const [file, setFile] = useState<ArrayBuffer>();
 
   const capture = useCallback(() => {
     if (webcamRef.current) {
@@ -29,21 +39,19 @@ export default function Home() {
           return;
         }
 
-        const mime = mimeMatch[1]; // Extract MIME type
-        const bstr = atob(arr[1]); // Decode Base64
-        const n = bstr.length;
-        const u8arr = new Uint8Array(n);
+        console.log(imageSrc);
+        let binaryString = atob(arr[1]);
 
-        for (let i = 0; i < n; i++) {
-          u8arr[i] = bstr.charCodeAt(i);
+        // Create a new ArrayBuffer
+        let len = binaryString.length;
+        let bytes = new Uint8Array(len);
+
+        // Populate the ArrayBuffer with the decoded binary data
+        for (let i = 0; i < len; i++) {
+          bytes[i] = binaryString.charCodeAt(i);
         }
 
-        const file = new File(
-          [u8arr],
-          new Date().toISOString() + "." + mime.split("/")[1],
-          { type: mime }
-        );
-        setFile(file); // Set the File object
+        setFile(bytes.buffer);
       }
     }
   }, [webcamRef]);
@@ -54,17 +62,34 @@ export default function Home() {
     }
   }, [dialogOpen]);
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const selectedFile = event.target.files?.[0];
     if (selectedFile) {
-      setFile(selectedFile);
-      console.log(selectedFile);
+      let file = await selectedFile.arrayBuffer();
+      setFile(file);
+      console.log(file);
     }
   };
 
+  async function runAIAnalysis(file: ArrayBuffer) {
+    const result = await model.generateContent([
+      {
+        inlineData: {
+          data: Buffer.from(file).toString("base64"),
+          mimeType: "image/jpeg",
+        },
+      },
+      "Caption this image.",
+    ]);
+    console.log(result.response.text());
+    return result;
+  }
+
   useEffect(() => {
     if (file) {
-      console.log(file);
+      runAIAnalysis(file);
     }
   }, [file]);
 
@@ -125,7 +150,7 @@ export default function Home() {
         />
       </div>
     </div>,
-    <div className="p-3 w-full">
+    <div className="p-3 w-full h-full flex items-center justify-center flex-col">
       <Webcam
         audio={false}
         height={1280}
@@ -134,9 +159,17 @@ export default function Home() {
         width={720}
         videoConstraints={videoConstraints}
         mirrored={true}
-        className="rounded-lg mx-auto aspect-[300/450] w-full object-cover"
+        className="rounded-lg mx-auto aspect-[300/450] w-full object-cover max-h-[600px]"
       />
-      <button onClick={capture}>Capture photo</button>
+      <div className="flex items-center justify-center py-2">
+        <Button
+          onClick={capture}
+          size="icon"
+          className="mx-auto rounded-full p-4 h-12 w-12"
+        >
+          <FaCamera />
+        </Button>
+      </div>
     </div>,
   ];
   return (
@@ -166,6 +199,7 @@ export default function Home() {
               backgroundImage: `url(${heroBG})`,
             }}
           >
+            <DialogTitle className="hidden">Skin AI Analysis</DialogTitle>
             {dialogContent[dialogState]}
           </DialogContent>
         </Dialog>
