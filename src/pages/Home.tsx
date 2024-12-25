@@ -37,7 +37,7 @@ export default function Home() {
     systemInstruction: `
 You are my professional AI skin care analyser. Analyse the face provided, provide the following.
 
-1. Rate my skin score out of 10 on the following.
+1. Rate my skin score out of 10 on the following. [Can give in 1 decimal place]
   1. Radiance
   2. Uneven tone
   3. Texture
@@ -52,23 +52,23 @@ Give the output in the following JSON schema and all fields are required.
 {
   "rating": {
     "radiance": {
-      "score": 10,
+      "score": 10.0,
       "explanation": ""
     },
     "unevenTone": {
-      "score": 10,
+      "score": 10.0,
       "explanation": ""
     },
     "texture": {
-      "score": 10,
+      "score": 10.0,
       "explanation": ""
     },
     "wrinkles": {
-      "score": 10,
+      "score": 10.0,
       "explanation": ""
     },
     "firmness": {
-      "score": 10,
+      "score": 10.0,
       "explanation": ""
     }
   },
