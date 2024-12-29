@@ -12,22 +12,36 @@ import Webcam from "react-webcam";
 import { Input } from "@/components/ui/input";
 import { FaCamera } from "react-icons/fa6";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import resultJSON from "@/assets/result.json";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  type CarouselApi,
+} from "@/components/ui/carousel";
+import { Card, CardContent, CardTitle, CardHeader } from "@/components/ui/card";
 
 export default function Home() {
+  const debug = true;
   const webcamRef = useRef<Webcam>(null);
   const videoConstraints = {
     width: 720,
     height: 1280,
     facingMode: "user",
   };
-  /**
- *
- * 1. A daily skin care routine
-2. Tips & Tricks to improve skin
-3. Recommend suitable products
-4. Search for videos on how to use the products
-5. Give me a
- */
+  const [api, setApi] = useState<CarouselApi>();
+  const [current, setCurrent] = useState(0);
+  const [count, setCount] = useState(0);
+  const [dialogOpen, setDialogOpen] = useState<boolean>(debug);
+  const [dialogState, setDialogState] = useState<number>(debug ? 4 : 0);
+  const [file, setFile] = useState<ArrayBuffer>();
+  const [imageSrc, setImageSrc] = useState<string>();
+  const [genResult, setGenResult] = useState<{ [key: string]: any }>(
+    debug ? resultJSON : {}
+  );
+  const [tabValue, setTabValue] = useState<string>("results");
+
   const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
   const model = genAI.getGenerativeModel({
     model: "gemini-1.5-flash",
@@ -88,12 +102,6 @@ Give the output in the following JSON schema and all fields are required.
     `,
   });
 
-  const [dialogOpen, setDialogOpen] = useState<boolean>(false);
-  const [dialogState, setDialogState] = useState<number>(0);
-  const [file, setFile] = useState<ArrayBuffer>();
-  const [imageSrc, setImageSrc] = useState<string>();
-  const [genResult, setGenResult] = useState<string>();
-
   const capture = useCallback(() => {
     if (webcamRef.current) {
       const imageSrc = webcamRef.current.getScreenshot();
@@ -129,6 +137,17 @@ Give the output in the following JSON schema and all fields are required.
     }
   }, [dialogOpen]);
 
+  useEffect(() => {
+    if (!api) {
+      return;
+    }
+    setCurrent(api.selectedScrollSnap() + 1);
+    setCount(api.scrollSnapList().length);
+    api.on("select", () => {
+      setCurrent(api.selectedScrollSnap() + 1);
+    });
+  }, [api]);
+
   const handleFileChange = async (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -158,7 +177,7 @@ Give the output in the following JSON schema and all fields are required.
       "Analyse the face.",
     ]);
     console.log(result.response.text());
-    setGenResult(result.response.text());
+    setGenResult(JSON.parse(result.response.text()));
     setDialogState(4);
     return result;
   }
@@ -254,10 +273,146 @@ Give the output in the following JSON schema and all fields are required.
         Analysing Face...
       </p>
     </div>,
-    <div className="w-full h-full flex flex-col overflow-scroll">
-      <h2 className="text-2xl">YOUR RESULTS</h2>
-      {genResult}
-      <div className="bg-white rounded-full">Texture</div>
+    <div className="w-full h-full flex flex-col overflow-scroll p-6 gap-3">
+      <h2 className="text-2xl text-center">HERE ARE YOUR RESULTS</h2>
+      <p>
+        Discover your unique skin needs with expert advice from our beauty
+        advisors and find your tailor-made skincare solution.
+      </p>
+      <img src={imageSrc} className="rounded-lg" />
+      <Tabs
+        defaultValue="results"
+        className="p-1"
+        value={tabValue}
+        onValueChange={(value) => setTabValue(value)}
+      >
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="results">My Results</TabsTrigger>
+          <TabsTrigger value="routine">My Routine</TabsTrigger>
+        </TabsList>
+        <TabsContent value="results">
+          <div>
+            <h3 className="text-xl text-center p-2">MY STRENGTHS</h3>
+            <p>
+              Great news! Your skin score is excellent on{" "}
+              {Object.entries(genResult["rating"])
+                .sort((a: any, b: any) => {
+                  return parseFloat(b[1]["score"]) - parseFloat(a[1]["score"]);
+                })
+                .slice(0, 5)[0][0]
+                .toUpperCase()}
+              . Let's have a look at all your skin strengths.
+            </p>
+            <Carousel
+              setApi={setApi}
+              opts={{
+                align: "start",
+                loop: true,
+              }}
+              className="w-full mx-auto"
+            >
+              <CarouselContent className="items-center">
+                {Object.entries(genResult["rating"])
+                  .sort((a: any, b: any) => {
+                    return (
+                      parseFloat(b[1]["score"]) - parseFloat(a[1]["score"])
+                    );
+                  })
+                  .slice(0, 5)
+                  .map((e: any, index) => (
+                    <CarouselItem
+                      key={index}
+                      className="md:basis-1/2 lg:basis-1/3"
+                    >
+                      <div className="p-1 pt-2">
+                        <Card>
+                          <CardHeader>
+                            <CardTitle className="text-lg text-green-600">
+                              {e[0].toUpperCase()} {e[1]["score"]} / 10
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent>{e[1]["explanation"]}</CardContent>
+                        </Card>
+                      </div>
+                    </CarouselItem>
+                  ))}
+              </CarouselContent>
+              <div className="flex items-center justify-center space-x-4 p-2">
+                {Array.from({ length: count }).map((_, index) => {
+                  return (
+                    <span
+                      key={"carousel" + index}
+                      onClick={() => api?.scrollTo(index)}
+                      className={cn(
+                        "block h-2 w-2 rounded-full",
+                        current == index + 1 ? "bg-blue-600" : "bg-gray-300"
+                      )}
+                    ></span>
+                  );
+                })}
+              </div>
+            </Carousel>
+          </div>
+          <div>
+            <h3 className="text-xl text-center p-2">MY PRIORITY</h3>
+            <p>
+              Your skin score is the lowest on{" "}
+              {Object.entries(genResult["rating"])
+                .sort((a: any, b: any) => {
+                  return parseFloat(a[1]["score"]) - parseFloat(b[1]["score"]);
+                })[0][0]
+                .toUpperCase()}
+              . Let's have a look to your skin priority.
+            </p>
+            <div className="p-1 pt-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg text-red-600">
+                    {Object.entries(genResult["rating"])
+                      .sort((a: any, b: any) => {
+                        return (
+                          parseFloat(a[1]["score"]) - parseFloat(b[1]["score"])
+                        );
+                      })[0][0]
+                      .toUpperCase()}{" "}
+                    {(
+                      Object.entries(genResult["rating"]).sort(
+                        (a: any, b: any) => {
+                          return (
+                            parseFloat(a[1]["score"]) -
+                            parseFloat(b[1]["score"])
+                          );
+                        }
+                      )[0][1] as any
+                    )["score"].toUpperCase()}{" "}
+                    / 10
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {
+                    (
+                      Object.entries(genResult["rating"]).sort(
+                        (a: any, b: any) => {
+                          return (
+                            parseFloat(a[1]["score"]) -
+                            parseFloat(b[1]["score"])
+                          );
+                        }
+                      )[0][1] as any
+                    )["explanation"]
+                  }
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+          <div className="w-full flex justify-center items-center">
+            <Button variant={"secondary"} className="mt-4 mx-auto">
+              DISCOVER MY ROUTINE
+            </Button>
+          </div>
+        </TabsContent>
+        <TabsContent value="routine">Change your routine here.</TabsContent>
+      </Tabs>
     </div>,
   ];
   return (
@@ -284,7 +439,8 @@ Give the output in the following JSON schema and all fields are required.
               dialogState == 0 ? "items-end" : "items-center"
             )}
             style={{
-              backgroundImage: `url(${heroBG})`,
+              background:
+                dialogState != 4 ? `url(${heroBG})` : "rgb(75,75,75,75%)",
             }}
           >
             <DialogTitle className="hidden">Skin AI Analysis</DialogTitle>
