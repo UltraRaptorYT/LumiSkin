@@ -23,7 +23,7 @@ import {
 import { Card, CardContent, CardTitle, CardHeader } from "@/components/ui/card";
 
 export default function Home() {
-  const debug = true;
+  const debug = false;
   const webcamRef = useRef<Webcam>(null);
   const videoConstraints = {
     width: 720,
@@ -37,9 +37,9 @@ export default function Home() {
   const [dialogState, setDialogState] = useState<number>(debug ? 4 : 0);
   const [file, setFile] = useState<ArrayBuffer>();
   const [imageSrc, setImageSrc] = useState<string>();
-  const [genResult, setGenResult] = useState<{ [key: string]: any }>(
-    debug ? resultJSON : {}
-  );
+  const [genResult, setGenResult] = useState<
+    { [key: string]: any } | undefined
+  >(debug ? resultJSON : undefined);
   const [tabValue, setTabValue] = useState<string>("results");
 
   const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
@@ -273,7 +273,7 @@ Give the output in the following JSON schema and all fields are required.
         Analysing Face...
       </p>
     </div>,
-    <div className="w-full h-full flex flex-col overflow-scroll p-6 gap-3">
+    <div className="w-full h-full flex flex-col overflow-y-auto p-6 gap-3">
       <h2 className="text-2xl text-center">HERE ARE YOUR RESULTS</h2>
       <p>
         Discover your unique skin needs with expert advice from our beauty
@@ -295,12 +295,15 @@ Give the output in the following JSON schema and all fields are required.
             <h3 className="text-xl text-center p-2">MY STRENGTHS</h3>
             <p>
               Great news! Your skin score is excellent on{" "}
-              {Object.entries(genResult["rating"])
-                .sort((a: any, b: any) => {
-                  return parseFloat(b[1]["score"]) - parseFloat(a[1]["score"]);
-                })
-                .slice(0, 5)[0][0]
-                .toUpperCase()}
+              {genResult &&
+                Object.entries(genResult["rating"])
+                  .sort((a: any, b: any) => {
+                    return (
+                      parseFloat(b[1]["score"]) - parseFloat(a[1]["score"])
+                    );
+                  })
+                  .slice(0, 5)[0][0]
+                  .toUpperCase()}
               . Let's have a look at all your skin strengths.
             </p>
             <Carousel
@@ -312,30 +315,31 @@ Give the output in the following JSON schema and all fields are required.
               className="w-full mx-auto"
             >
               <CarouselContent className="items-center">
-                {Object.entries(genResult["rating"])
-                  .sort((a: any, b: any) => {
-                    return (
-                      parseFloat(b[1]["score"]) - parseFloat(a[1]["score"])
-                    );
-                  })
-                  .slice(0, 5)
-                  .map((e: any, index) => (
-                    <CarouselItem
-                      key={index}
-                      className="md:basis-1/2 lg:basis-1/3"
-                    >
-                      <div className="p-1 pt-2">
-                        <Card>
-                          <CardHeader>
-                            <CardTitle className="text-lg text-green-600">
-                              {e[0].toUpperCase()} {e[1]["score"]} / 10
-                            </CardTitle>
-                          </CardHeader>
-                          <CardContent>{e[1]["explanation"]}</CardContent>
-                        </Card>
-                      </div>
-                    </CarouselItem>
-                  ))}
+                {genResult &&
+                  Object.entries(genResult["rating"])
+                    .sort((a: any, b: any) => {
+                      return (
+                        parseFloat(b[1]["score"]) - parseFloat(a[1]["score"])
+                      );
+                    })
+                    .slice(0, 5)
+                    .map((e: any, index) => (
+                      <CarouselItem
+                        key={index}
+                        className="md:basis-1/2 lg:basis-1/3"
+                      >
+                        <div className="p-1 pt-2">
+                          <Card>
+                            <CardHeader>
+                              <CardTitle className="text-lg text-green-600">
+                                {e[0].toUpperCase()} {e[1]["score"]} / 10
+                              </CardTitle>
+                            </CardHeader>
+                            <CardContent>{e[1]["explanation"]}</CardContent>
+                          </Card>
+                        </div>
+                      </CarouselItem>
+                    ))}
               </CarouselContent>
               <div className="flex items-center justify-center space-x-4 p-2">
                 {Array.from({ length: count }).map((_, index) => {
@@ -357,39 +361,45 @@ Give the output in the following JSON schema and all fields are required.
             <h3 className="text-xl text-center p-2">MY PRIORITY</h3>
             <p>
               Your skin score is the lowest on{" "}
-              {Object.entries(genResult["rating"])
-                .sort((a: any, b: any) => {
-                  return parseFloat(a[1]["score"]) - parseFloat(b[1]["score"]);
-                })[0][0]
-                .toUpperCase()}
+              {genResult &&
+                Object.entries(genResult["rating"])
+                  .sort((a: any, b: any) => {
+                    return (
+                      parseFloat(a[1]["score"]) - parseFloat(b[1]["score"])
+                    );
+                  })[0][0]
+                  .toUpperCase()}
               . Let's have a look to your skin priority.
             </p>
             <div className="p-1 pt-2">
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg text-red-600">
-                    {Object.entries(genResult["rating"])
-                      .sort((a: any, b: any) => {
-                        return (
-                          parseFloat(a[1]["score"]) - parseFloat(b[1]["score"])
-                        );
-                      })[0][0]
-                      .toUpperCase()}{" "}
-                    {(
-                      Object.entries(genResult["rating"]).sort(
-                        (a: any, b: any) => {
+                    {genResult &&
+                      Object.entries(genResult["rating"])
+                        .sort((a: any, b: any) => {
                           return (
                             parseFloat(a[1]["score"]) -
                             parseFloat(b[1]["score"])
                           );
-                        }
-                      )[0][1] as any
-                    )["score"].toUpperCase()}{" "}
+                        })[0][0]
+                        .toUpperCase()}{" "}
+                    {genResult &&
+                      (
+                        Object.entries(genResult["rating"]).sort(
+                          (a: any, b: any) => {
+                            return (
+                              parseFloat(a[1]["score"]) -
+                              parseFloat(b[1]["score"])
+                            );
+                          }
+                        )[0][1] as any
+                      )["score"]}{" "}
                     / 10
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {
+                  {genResult &&
                     (
                       Object.entries(genResult["rating"]).sort(
                         (a: any, b: any) => {
@@ -399,14 +409,17 @@ Give the output in the following JSON schema and all fields are required.
                           );
                         }
                       )[0][1] as any
-                    )["explanation"]
-                  }
+                    )["explanation"]}
                 </CardContent>
               </Card>
             </div>
           </div>
           <div className="w-full flex justify-center items-center">
-            <Button variant={"secondary"} className="mt-4 mx-auto">
+            <Button
+              variant={"secondary"}
+              className="mt-4 mx-auto"
+              onClick={() => setTabValue("routine")}
+            >
               DISCOVER MY ROUTINE
             </Button>
           </div>
@@ -439,8 +452,8 @@ Give the output in the following JSON schema and all fields are required.
               dialogState == 0 ? "items-end" : "items-center"
             )}
             style={{
-              background:
-                dialogState != 4 ? `url(${heroBG})` : "rgb(75,75,75,75%)",
+              backgroundImage: dialogState != 4 ? `url(${heroBG})` : "",
+              backgroundColor: "rgb(75,75,75,75%)",
             }}
           >
             <DialogTitle className="hidden">Skin AI Analysis</DialogTitle>
