@@ -20,7 +20,14 @@ import {
   CarouselItem,
   type CarouselApi,
 } from "@/components/ui/carousel";
-import { Card, CardContent, CardTitle, CardHeader } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardTitle,
+  CardHeader,
+  CardFooter,
+} from "@/components/ui/card";
+import ReactMarkdown from "react-markdown";
 
 export default function Home() {
   const debug = false;
@@ -59,7 +66,7 @@ You are my professional AI skin care analyser. Analyse the face provided, provid
   5. Firmness
 2. Provide me with an simple yet effective skin care routine to fix my skin issues. [Format in Markdown]
 3. Provide me with tips and tricks to fix my skin. [Format in Markdown]
-4. Recommend me skin care products with image that will fix my skin. [Give me links]
+4. Recommend me at least 3 skin care products with image that will fix my skin. [Give me links]
 5. Provide a tutorial on how to use the skin care product via YouTube links.
 
 Give the output in the following JSON schema and all fields are required.
@@ -95,7 +102,7 @@ Give the output in the following JSON schema and all fields are required.
       "image": "Must be link",
       "url": "Must be link",
       "explanation": "",
-      "tutorial": "Must be link"
+      "tutorial": "Must be link",
     }
   ]
 }
@@ -322,7 +329,7 @@ Give the output in the following JSON schema and all fields are required.
                         parseFloat(b[1]["score"]) - parseFloat(a[1]["score"])
                       );
                     })
-                    .slice(0, 5)
+                    .slice(0, 4)
                     .map((e: any, index) => (
                       <CarouselItem
                         key={index}
@@ -424,7 +431,58 @@ Give the output in the following JSON schema and all fields are required.
             </Button>
           </div>
         </TabsContent>
-        <TabsContent value="routine">Change your routine here.</TabsContent>
+        <TabsContent value="routine">
+          <div className="py-3">
+            <h3 className="text-xl text-center p-2">RECOMMENDED ROUTINE</h3>
+            <ReactMarkdown>{genResult && genResult["routine"]}</ReactMarkdown>
+          </div>
+          <div className="py-3">
+            <h3 className="text-xl text-center p-2">TIPS & TRICKS</h3>
+            <ReactMarkdown>{genResult && genResult["tips"]}</ReactMarkdown>
+          </div>
+          <div className="py-3">
+            <h3 className="text-xl text-center p-2">RECOMMENDED PRODUCTS</h3>
+            <div className="flex overflow-x-auto gap-4 items-center">
+              {genResult &&
+                genResult["products"].map((e: any, i: number) => {
+                  return (
+                    <Card key={"prod" + i}>
+                      <CardHeader>
+                        <CardTitle>{e["name"]}</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <img
+                          src={e["image"]}
+                          alt={e["name"]}
+                          className="text-xs"
+                        />
+                        <p className="font-bold text-lg">{e["price"]}</p>
+                      </CardContent>
+                      <CardFooter className="mt-auto">
+                        <div className="flex gap-3">
+                          <Button
+                            onClick={() => {
+                              window.open(e["url"], "_blank");
+                            }}
+                          >
+                            Buy Here
+                          </Button>
+                          <Button
+                            variant={"secondary"}
+                            onClick={() => {
+                              window.open(e["tutorial"], "_blank");
+                            }}
+                          >
+                            Watch Tutorials
+                          </Button>
+                        </div>
+                      </CardFooter>
+                    </Card>
+                  );
+                })}
+            </div>
+          </div>
+        </TabsContent>
       </Tabs>
     </div>,
   ];
