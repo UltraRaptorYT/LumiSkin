@@ -109,6 +109,43 @@ Give the output in the following JSON schema and all fields are required.
     `,
   });
 
+  // type ImageAndLinkObject = {
+  //   image: string;
+  //   url: string;
+  // };
+
+  // async function getImagesAndLink(
+  //   name: string,
+  //   image: string,
+  //   url: string
+  // ): Promise<ImageAndLinkObject> {
+  //   try {
+  //     console.log(name);
+  //     // const response = await fetch(
+  //     //   `https://serpapi.com/search.json?engine=google_images&q=${encodeURIComponent(
+  //     //     name
+  //     //   )}&api_key=${import.meta.env.VITE_SERPAPI_API_KEY}`,
+  //     //   {
+  //     //     mode: "no-cors",
+  //     //   }
+  //     // );
+  //     // const data = await response.json();
+  //     // console.log(data);
+  //     // const result = data["images_results"].filter((e: any) => e["is_product"]);
+  //     // console.log(result);
+  //     // return {
+  //     //   image: result[0]["original"],
+  //     //   url: result[0]["link"],
+  //     // };
+  //   } catch {
+  //     console.log("ERROR");
+  //     return {
+  //       image: image,
+  //       url: url,
+  //     };
+  //   }
+  // }
+
   const capture = useCallback(() => {
     if (webcamRef.current) {
       const imageSrc = webcamRef.current.getScreenshot();
@@ -183,20 +220,22 @@ Give the output in the following JSON schema and all fields are required.
       },
       "Analyse the face.",
     ]);
-    console.log(result.response.text());
     let data = JSON.parse(result.response.text());
-    const updatedProducts = data["products"].map(async (e: any) => {
-      const { image, url } = await getImagesAndLink(
-        e["name"],
-        e["image"],
-        e["url"]
-      );
-      return { ...e, image, url };
-    });
+    console.log(data);
+
+    // const updatedProducts = data["products"].map(async (e: any) => {
+    //   const { image, url } = await getImagesAndLink(
+    //     e["name"],
+    //     e["image"],
+    //     e["url"]
+    //   );
+    //   console.log({ ...e, image, url }, e);
+    //   return { ...e, image, url };
+    // });
 
     const updatedData = {
       ...data,
-      products: updatedProducts,
+      // products: updatedProducts,
     };
 
     setGenResult(updatedData);
