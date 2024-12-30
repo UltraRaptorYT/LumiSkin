@@ -184,7 +184,22 @@ Give the output in the following JSON schema and all fields are required.
       "Analyse the face.",
     ]);
     console.log(result.response.text());
-    setGenResult(JSON.parse(result.response.text()));
+    let data = JSON.parse(result.response.text());
+    const updatedProducts = data["products"].map(async (e: any) => {
+      const { image, url } = await getImagesAndLink(
+        e["name"],
+        e["image"],
+        e["url"]
+      );
+      return { ...e, image, url };
+    });
+
+    const updatedData = {
+      ...data,
+      products: updatedProducts,
+    };
+
+    setGenResult(updatedData);
     setDialogState(4);
     return result;
   }
@@ -331,10 +346,7 @@ Give the output in the following JSON schema and all fields are required.
                     })
                     .slice(0, 4)
                     .map((e: any, index) => (
-                      <CarouselItem
-                        key={index}
-                        className="md:basis-1/2 lg:basis-1/3"
-                      >
+                      <CarouselItem key={index}>
                         <div className="p-1 pt-2">
                           <Card>
                             <CardHeader>
