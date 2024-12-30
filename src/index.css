@@ -1,6 +1,17 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@font-face {
+  font-family: Merriweather;
+  src: url("./Merriweather-Regular.ttf");
+}
+
+*,
+*::before,
+*::after {
+  font-family: Merriweather;
+}
+
 @layer base {
   :root {
     --radius: 0.5rem;
