@@ -1,4 +1,6 @@
-import heroBG from "@/assets/herobg.webp";
+"use client";
+
+import Image from "next/image";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,7 +15,6 @@ import { Input } from "@/components/ui/input";
 import { FaCamera } from "react-icons/fa6";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import resultJSON from "@/assets/result.json";
 import {
   Carousel,
   CarouselContent,
@@ -30,7 +31,6 @@ import {
 import ReactMarkdown from "react-markdown";
 
 export default function Home() {
-  const debug = false;
   const webcamRef = useRef<Webcam>(null);
   const videoConstraints = {
     width: 720,
@@ -40,16 +40,18 @@ export default function Home() {
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(0);
   const [count, setCount] = useState(0);
-  const [dialogOpen, setDialogOpen] = useState<boolean>(debug);
-  const [dialogState, setDialogState] = useState<number>(debug ? 4 : 0);
+  const [dialogOpen, setDialogOpen] = useState<boolean>();
+  const [dialogState, setDialogState] = useState<number>(0);
   const [file, setFile] = useState<ArrayBuffer>();
   const [imageSrc, setImageSrc] = useState<string>();
   const [genResult, setGenResult] = useState<
     { [key: string]: any } | undefined
-  >(debug ? resultJSON : undefined);
+  >(undefined);
   const [tabValue, setTabValue] = useState<string>("results");
 
-  const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
+  const genAI = new GoogleGenerativeAI(
+    process.env.NEXT_PUBLIC_GEMINI_API_KEY || ""
+  );
   const model = genAI.getGenerativeModel({
     model: "gemini-1.5-flash",
     generationConfig: {
@@ -539,7 +541,7 @@ Give the output in the following JSON schema and all fields are required.
   ];
   return (
     <div className="h-full flex flex-col items-center justify-center container mx-auto">
-      <img src={heroBG} className="max-w-md mx-auto w-full" />
+      <img src="./herobg.webp" className="max-w-md mx-auto w-full" />
       <div className="container max-w-md px-4 py-2 mx-auto mt-auto">
         <h2 className="text-xl">NEW E-SKIN EXPERT</h2>
         <h3 className="text-lg">OUR MOST ADVANCED ONLINE SKIN ANALYSIS</h3>
@@ -561,7 +563,7 @@ Give the output in the following JSON schema and all fields are required.
               dialogState == 0 ? "items-end" : "items-center"
             )}
             style={{
-              backgroundImage: dialogState != 4 ? `url(${heroBG})` : "",
+              backgroundImage: dialogState != 4 ? `url("./herobg.webp")` : "",
               backgroundColor: "rgb(75,75,75,75%)",
             }}
           >
