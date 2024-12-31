@@ -543,7 +543,7 @@ Give the output in the following JSON schema and all fields are required.
       <div className="container max-w-md px-4 py-2 mx-auto mt-auto">
         <h2 className="text-xl">NEW E-SKIN EXPERT</h2>
         <h3 className="text-lg">OUR MOST ADVANCED ONLINE SKIN ANALYSIS</h3>
-        <p className="my-4">
+        <p className="my-2">
           You are one picture away from revealing your skin’s true potential.
           Get your personalized skincare solution and expert tips with our A.I.
           powered online skin analysis tool.
