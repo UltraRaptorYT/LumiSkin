@@ -331,7 +331,13 @@ Give the output in the following JSON schema and all fields are required.
       </div>
     </div>,
     <div className="p-3 w-full h-full flex items-center relative">
-      <img src={imageSrc} className="animate-pulse rounded-lg" />
+      <Image
+        src={imageSrc || ""}
+        className="animate-pulse rounded-lg"
+        alt=""
+        width={100}
+        height={100}
+      />
       <p className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 p-2 rounded-full animate-pulse bg-black/50">
         Analysing Face...
       </p>
@@ -342,7 +348,13 @@ Give the output in the following JSON schema and all fields are required.
         Discover your unique skin needs with expert advice from our beauty
         advisors and find your tailor-made skincare solution.
       </p>
-      <img src={imageSrc} className="rounded-lg" />
+      <Image
+        src={imageSrc || ""}
+        className="rounded-lg"
+        alt=""
+        width={100}
+        height={100}
+      />
       <Tabs
         defaultValue="results"
         className="p-1"
@@ -504,10 +516,12 @@ Give the output in the following JSON schema and all fields are required.
                         <CardTitle>{e["name"]}</CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <img
+                        <Image
                           src={e["image"]}
                           alt={e["name"]}
                           className="text-xs"
+                          width={100}
+                          height={100}
                         />
                         <p className="font-bold text-lg">{e["price"]}</p>
                       </CardContent>
@@ -541,7 +555,13 @@ Give the output in the following JSON schema and all fields are required.
   ];
   return (
     <div className="h-full flex flex-col items-center justify-center container mx-auto">
-      <img src="./herobg.webp" className="max-w-md mx-auto w-full" />
+      <Image
+        src="./herobg.webp"
+        className="max-w-md mx-auto w-full"
+        alt=""
+        width={100}
+        height={100}
+      />
       <div className="container max-w-md px-4 py-2 mx-auto mt-auto">
         <h2 className="text-xl">NEW E-SKIN EXPERT</h2>
         <h3 className="text-lg">OUR MOST ADVANCED ONLINE SKIN ANALYSIS</h3>
