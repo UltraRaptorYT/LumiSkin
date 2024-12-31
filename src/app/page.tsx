@@ -215,7 +215,7 @@ Give the output in the following JSON schema and all fields are required.
 
       // Process the products with async operations
       const updatedProducts = await Promise.all(
-        data["products"].map(async (e) => {
+        data["products"].map(async (e: any) => {
           const output = await getImagesAndLink(e["name"]);
           let image, url;
           if (output) {
