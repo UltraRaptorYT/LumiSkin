@@ -161,11 +161,11 @@ Give the output in the following JSON schema and all fields are required.
         }
 
         console.log(imageSrc);
-        let binaryString = atob(arr[1]);
+        const binaryString = atob(arr[1]);
 
         // Create a new ArrayBuffer
-        let len = binaryString.length;
-        let bytes = new Uint8Array(len);
+        const len = binaryString.length;
+        const bytes = new Uint8Array(len);
 
         // Populate the ArrayBuffer with the decoded binary data
         for (let i = 0; i < len; i++) {
@@ -199,7 +199,7 @@ Give the output in the following JSON schema and all fields are required.
   ) => {
     const selectedFile = event.target.files?.[0];
     if (selectedFile) {
-      let file = await selectedFile.arrayBuffer();
+      const file = await selectedFile.arrayBuffer();
       const blob = new Blob([file], { type: "image/png" });
 
       // Step 2: Create a URL from the Blob
@@ -222,7 +222,7 @@ Give the output in the following JSON schema and all fields are required.
       },
       "Analyse the face.",
     ]);
-    let data = JSON.parse(result.response.text());
+    const data = JSON.parse(result.response.text());
     console.log(data);
 
     // const updatedProducts = data["products"].map(async (e: any) => {
@@ -379,7 +379,7 @@ Give the output in the following JSON schema and all fields are required.
                   })
                   .slice(0, 5)[0][0]
                   .toUpperCase()}
-              . Let's have a look at all your skin strengths.
+              . Let&apos;s have a look at all your skin strengths.
             </p>
             <Carousel
               setApi={setApi}
@@ -399,7 +399,7 @@ Give the output in the following JSON schema and all fields are required.
                     })
                     .slice(0, 4)
                     .map((e: any, index) => (
-                      <CarouselItem key={index}>
+                      <CarouselItem key={"carousel" + index}>
                         <div className="p-1 pt-2">
                           <Card>
                             <CardHeader>
@@ -441,7 +441,7 @@ Give the output in the following JSON schema and all fields are required.
                     );
                   })[0][0]
                   .toUpperCase()}
-              . Let's have a look to your skin priority.
+              . Let&apos;s have a look to your skin priority.
             </p>
             <div className="p-1 pt-2">
               <Card>
