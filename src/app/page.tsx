@@ -335,8 +335,8 @@ Give the output in the following JSON schema and all fields are required.
         src={imageSrc || ""}
         className="animate-pulse rounded-lg"
         alt=""
-        width={100}
-        height={100}
+        width={1000}
+        height={1000}
       />
       <p className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 p-2 rounded-full animate-pulse bg-black/50">
         Analysing Face...
@@ -352,8 +352,8 @@ Give the output in the following JSON schema and all fields are required.
         src={imageSrc || ""}
         className="rounded-lg"
         alt=""
-        width={100}
-        height={100}
+        width={1000}
+        height={1000}
       />
       <Tabs
         defaultValue="results"
@@ -517,11 +517,11 @@ Give the output in the following JSON schema and all fields are required.
                       </CardHeader>
                       <CardContent>
                         <Image
-                          src={e["image"]}
+                          src={"/api/proxy?url=" + e["image"]}
                           alt={e["name"]}
-                          className="text-xs"
-                          width={100}
-                          height={100}
+                          className="text-xs max-w-40 mx-auto"
+                          width={1000}
+                          height={1000}
                         />
                         <p className="font-bold text-lg">{e["price"]}</p>
                       </CardContent>
@@ -556,11 +556,11 @@ Give the output in the following JSON schema and all fields are required.
   return (
     <div className="h-full flex flex-col items-center justify-center container mx-auto">
       <Image
-        src="./herobg.webp"
+        src="/herobg.webp"
         className="max-w-md mx-auto w-full"
         alt=""
-        width={100}
-        height={100}
+        width={1000}
+        height={1000}
       />
       <div className="container max-w-md px-4 py-2 mx-auto mt-auto">
         <h2 className="text-xl">NEW E-SKIN EXPERT</h2>
