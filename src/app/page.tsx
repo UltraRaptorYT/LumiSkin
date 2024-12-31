@@ -503,11 +503,15 @@ Give the output in the following JSON schema and all fields are required.
         <TabsContent value="routine">
           <div className="py-3">
             <h3 className="text-xl text-center p-2">RECOMMENDED ROUTINE</h3>
-            <ReactMarkdown>{genResult && genResult["routine"]}</ReactMarkdown>
+            <ReactMarkdown className={"prose prose-invert"}>
+              {genResult && genResult["routine"]}
+            </ReactMarkdown>
           </div>
           <div className="py-3">
             <h3 className="text-xl text-center p-2">TIPS & TRICKS</h3>
-            <ReactMarkdown>{genResult && genResult["tips"]}</ReactMarkdown>
+            <ReactMarkdown className={"prose prose-invert"}>
+              {genResult && genResult["tips"]}
+            </ReactMarkdown>
           </div>
           <div className="py-3">
             <h3 className="text-xl text-center p-2">RECOMMENDED PRODUCTS</h3>
