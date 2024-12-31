@@ -111,42 +111,25 @@ Give the output in the following JSON schema and all fields are required.
     `,
   });
 
-  // type ImageAndLinkObject = {
-  //   image: string;
-  //   url: string;
-  // };
+  type ImageAndLinkObject = {
+    image: string;
+    url: string;
+  };
 
-  // async function getImagesAndLink(
-  //   name: string,
-  //   image: string,
-  //   url: string
-  // ): Promise<ImageAndLinkObject> {
-  //   try {
-  //     console.log(name);
-  //     // const response = await fetch(
-  //     //   `https://serpapi.com/search.json?engine=google_images&q=${encodeURIComponent(
-  //     //     name
-  //     //   )}&api_key=${import.meta.env.VITE_SERPAPI_API_KEY}`,
-  //     //   {
-  //     //     mode: "no-cors",
-  //     //   }
-  //     // );
-  //     // const data = await response.json();
-  //     // console.log(data);
-  //     // const result = data["images_results"].filter((e: any) => e["is_product"]);
-  //     // console.log(result);
-  //     // return {
-  //     //   image: result[0]["original"],
-  //     //   url: result[0]["link"],
-  //     // };
-  //   } catch {
-  //     console.log("ERROR");
-  //     return {
-  //       image: image,
-  //       url: url,
-  //     };
-  //   }
-  // }
+  async function getImagesAndLink(
+    imageName: string
+  ): Promise<ImageAndLinkObject | undefined> {
+    try {
+      const response = await fetch(
+        `/api/products?q=${encodeURIComponent(imageName)}`
+      );
+      const { image, url } = await response.json();
+      return { image, url };
+    } catch (error) {
+      console.log(error);
+      return undefined;
+    }
+  }
 
   const capture = useCallback(() => {
     if (webcamRef.current) {
@@ -225,19 +208,24 @@ Give the output in the following JSON schema and all fields are required.
     const data = JSON.parse(result.response.text());
     console.log(data);
 
-    // const updatedProducts = data["products"].map(async (e: any) => {
-    //   const { image, url } = await getImagesAndLink(
-    //     e["name"],
-    //     e["image"],
-    //     e["url"]
-    //   );
-    //   console.log({ ...e, image, url }, e);
-    //   return { ...e, image, url };
-    // });
+    const updatedProducts = data["products"].map(async (e: any) => {
+      const output = await getImagesAndLink(e["name"]);
+      let image, url;
+      if (output) {
+        image = output["image"];
+        url = output["url"];
+      } else {
+        image = e["image"];
+        url = e["url"];
+      }
+
+      console.log({ ...e, image, url }, e);
+      return { ...e, image, url };
+    });
 
     const updatedData = {
       ...data,
-      // products: updatedProducts,
+      products: updatedProducts,
     };
 
     setGenResult(updatedData);
