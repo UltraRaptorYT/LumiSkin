@@ -124,6 +124,7 @@ Give the output in the following JSON schema and all fields are required.
         `/api/products?q=${encodeURIComponent(imageName)}`
       );
       const { image, url } = await response.json();
+      console.log(image, url);
       return { image, url };
     } catch (error) {
       console.log(error);
@@ -196,41 +197,56 @@ Give the output in the following JSON schema and all fields are required.
   };
 
   async function runAIAnalysis(file: ArrayBuffer) {
-    const result = await model.generateContent([
-      {
-        inlineData: {
-          data: Buffer.from(file).toString("base64"),
-          mimeType: "image/jpeg",
+    try {
+      // Call the AI model to generate content
+      const result = await model.generateContent([
+        {
+          inlineData: {
+            data: Buffer.from(file).toString("base64"),
+            mimeType: "image/jpeg",
+          },
         },
-      },
-      "Analyse the face.",
-    ]);
-    const data = JSON.parse(result.response.text());
-    console.log(data);
+        "Analyse the face.",
+      ]);
 
-    const updatedProducts = data["products"].map(async (e: any) => {
-      const output = await getImagesAndLink(e["name"]);
-      let image, url;
-      if (output) {
-        image = output["image"];
-        url = output["url"];
-      } else {
-        image = e["image"];
-        url = e["url"];
-      }
+      // Parse the response
+      const data = JSON.parse(result.response.text());
+      console.log(data);
 
-      console.log({ ...e, image, url }, e);
-      return { ...e, image, url };
-    });
+      // Process the products with async operations
+      const updatedProducts = await Promise.all(
+        data["products"].map(async (e) => {
+          const output = await getImagesAndLink(e["name"]);
+          let image, url;
+          if (output) {
+            image = output["image"];
+            url = output["url"];
+          } else {
+            image = e["image"];
+            url = e["url"];
+          }
 
-    const updatedData = {
-      ...data,
-      products: updatedProducts,
-    };
+          console.log({ ...e, image, url }, e);
+          return { ...e, image, url };
+        })
+      );
 
-    setGenResult(updatedData);
-    setDialogState(4);
-    return result;
+      // Update the data structure with the new products array
+      const updatedData = {
+        ...data,
+        products: updatedProducts,
+      };
+
+      console.log(updatedData);
+
+      // Update the state and return the result
+      setGenResult(updatedData);
+      setDialogState(4);
+      return result;
+    } catch (error) {
+      console.error("Error in runAIAnalysis:", error);
+      throw error;
+    }
   }
 
   useEffect(() => {
