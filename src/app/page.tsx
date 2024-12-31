@@ -68,7 +68,7 @@ You are my professional AI skin care analyser. Analyse the face provided, provid
   5. Firmness
 2. Provide me with an simple yet effective skin care routine to fix my skin issues. [Format in Markdown]
 3. Provide me with tips and tricks to fix my skin. [Format in Markdown]
-4. Recommend me at least 3 skin care products with image that will fix my skin. [Give me links]
+4. Recommend me at least 3 luxury skin care products with image that will fix my skin. [Give me links]
 5. Provide a tutorial on how to use the skin care product via YouTube links.
 
 Give the output in the following JSON schema and all fields are required.
@@ -503,7 +503,9 @@ Give the output in the following JSON schema and all fields are required.
         <TabsContent value="routine">
           <div className="py-3">
             <h3 className="text-xl text-center p-2">RECOMMENDED ROUTINE</h3>
-            <ReactMarkdown className={"prose prose-invert"}>
+            <ReactMarkdown
+              className={"prose prose-invert prose-headings:text-base"}
+            >
               {genResult && genResult["routine"]}
             </ReactMarkdown>
           </div>
@@ -527,7 +529,7 @@ Give the output in the following JSON schema and all fields are required.
                         <Image
                           src={"/api/proxy?url=" + e["image"]}
                           alt={e["name"]}
-                          className="text-xs max-w-40 mx-auto"
+                          className="text-xs max-w-40 max-h-36 object-contain mx-auto"
                           width={1000}
                           height={1000}
                         />
